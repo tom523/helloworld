@@ -9,18 +9,34 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 See the License for the specific language governing permissions and limitations under the License.
 """
 
-from common.mymako import render_mako_context
+from common.mymako import render_mako_context, render_json
 from django.http import HttpResponse
+from common.log import logger
+from home_application.models import MultRecord
+
 
 def index(request):
-    return  HttpResponse('Hello World')
+    return HttpResponse('Hello World')
 
+
+def multiplication_computer(request):
+    multiplier = int(request.POST.get('multiplier'))
+    multiplicand = int(request.POST.get('multiplicand'))
+    mult_result = multiplier * multiplicand
+    logger.debug(multiplier)
+    mult_record = MultRecord(multiplier=multiplier, multiplicand=multiplicand, mult_result=mult_result)
+    mult_record.save()
+    return render_json({"result": True, "mult_result": mult_result})
 
 def home(request):
     """
     首页
     """
-    return render_mako_context(request, '/home_application/home.html')
+    all_record = MultRecord.objects.all()
+    ctx = {
+        'all_record': all_record
+    }
+    return render_mako_context(request, '/home_application/home.html', ctx)
 
 
 def dev_guide(request):
